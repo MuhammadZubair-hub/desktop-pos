@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { Package, Plus, Search, Edit2, AlertCircle, TrendingUp, Layers, Check, X } from 'lucide-react';
+import { Package, Plus, Search, Edit2, AlertCircle, TrendingUp, X } from 'lucide-react';
 import { usePOS } from '../context/POSContext';
 import { Product } from '../types/pos';
 
 export const InventoryView: React.FC = () => {
   const { products, categories, saveProduct, adjustProductStock, settings } = usePOS();
-  const currency = settings.currency_symbol || '$';
+  const currency = settings.currency_symbol || 'Rs. ';
 
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<number | null>(null);
@@ -70,7 +70,7 @@ export const InventoryView: React.FC = () => {
       barcode: '',
       price: '',
       cost_price: '',
-      stock_qty: '10',
+      stock_qty: '20',
       category_id: categories[0]?.id?.toString() || '',
       is_active: 1,
     });
@@ -133,64 +133,64 @@ export const InventoryView: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-slate-950 p-6 space-y-5">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[#0A0A0A] p-6 space-y-5">
       {/* Top Banner Stats */}
       <div className="grid grid-cols-4 gap-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+        <div className="bg-[#121212] border border-neutral-800 rounded-xl p-4 flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-lg bg-yellow-400/10 border border-yellow-400/20 flex items-center justify-center text-yellow-400">
             <Package className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-xs text-slate-400 font-medium">Total Products</span>
-            <div className="text-xl font-bold font-mono text-white">{products.length} Items</div>
+            <span className="text-xs text-neutral-400 font-medium">Menu Catalog Items</span>
+            <div className="text-xl font-bold font-mono text-white">{products.length} Products</div>
           </div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+        <div className="bg-[#121212] border border-neutral-800 rounded-xl p-4 flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-lg bg-yellow-400/10 border border-yellow-400/20 flex items-center justify-center text-yellow-400">
             <AlertCircle className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-xs text-slate-400 font-medium">Low Stock Warning</span>
-            <div className="text-xl font-bold font-mono text-amber-400">{lowStockCount} Products</div>
+            <span className="text-xs text-neutral-400 font-medium">Low Stock Items</span>
+            <div className="text-xl font-bold font-mono text-yellow-400">{lowStockCount} Products</div>
           </div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center space-x-3">
+        <div className="bg-[#121212] border border-neutral-800 rounded-xl p-4 flex items-center space-x-3">
           <div className="w-10 h-10 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
             <AlertCircle className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-xs text-slate-400 font-medium">Out of Stock</span>
+            <span className="text-xs text-neutral-400 font-medium">Out of Stock</span>
             <div className="text-xl font-bold font-mono text-rose-400">{outOfStockCount} Products</div>
           </div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+        <div className="bg-[#121212] border border-neutral-800 rounded-xl p-4 flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-lg bg-yellow-400/10 border border-yellow-400/20 flex items-center justify-center text-yellow-400">
             <TrendingUp className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-xs text-slate-400 font-medium">Total Valuation</span>
-            <div className="text-xl font-bold font-mono text-emerald-400">
-              {currency}{totalValuation.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            <span className="text-xs text-neutral-400 font-medium">Stock Value</span>
+            <div className="text-xl font-bold font-mono text-white">
+              {currency}{totalValuation.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </div>
           </div>
         </div>
       </div>
 
       {/* Control Bar: Search, Filters, Add Product */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 flex items-center justify-between space-x-4">
+      <div className="bg-[#121212] border border-neutral-800 rounded-xl p-3.5 flex items-center justify-between space-x-4">
         <div className="flex items-center space-x-3 flex-1">
           {/* Search */}
           <div className="relative w-72">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
             <input
               type="text"
               placeholder="Search product, SKU, barcode..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              className="w-full bg-neutral-900 border border-neutral-700 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-yellow-400"
             />
           </div>
 
@@ -198,36 +198,36 @@ export const InventoryView: React.FC = () => {
           <select
             value={categoryFilter || ''}
             onChange={(e) => setCategoryFilter(e.target.value ? Number(e.target.value) : null)}
-            className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500"
+            className="bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-yellow-400"
           >
-            <option value="">All Categories</option>
+            <option value="">All Categories ({categories.length})</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
 
           {/* Stock Filter Pills */}
-          <div className="flex items-center space-x-1 bg-slate-800 p-0.5 rounded-lg border border-slate-700">
+          <div className="flex items-center space-x-1 bg-neutral-900 p-0.5 rounded-lg border border-neutral-800">
             <button
               onClick={() => setStockFilter('all')}
-              className={`px-2.5 py-1 text-xs rounded font-medium transition-colors ${
-                stockFilter === 'all' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
+              className={`px-2.5 py-1 text-xs rounded font-bold transition-colors ${
+                stockFilter === 'all' ? 'bg-yellow-400 text-black' : 'text-neutral-400 hover:text-white'
               }`}
             >
               All
             </button>
             <button
               onClick={() => setStockFilter('low')}
-              className={`px-2.5 py-1 text-xs rounded font-medium transition-colors ${
-                stockFilter === 'low' ? 'bg-amber-600 text-white' : 'text-slate-400 hover:text-white'
+              className={`px-2.5 py-1 text-xs rounded font-bold transition-colors ${
+                stockFilter === 'low' ? 'bg-yellow-400 text-black' : 'text-neutral-400 hover:text-white'
               }`}
             >
               Low Stock
             </button>
             <button
               onClick={() => setStockFilter('out')}
-              className={`px-2.5 py-1 text-xs rounded font-medium transition-colors ${
-                stockFilter === 'out' ? 'bg-rose-600 text-white' : 'text-slate-400 hover:text-white'
+              className={`px-2.5 py-1 text-xs rounded font-bold transition-colors ${
+                stockFilter === 'out' ? 'bg-rose-600 text-white' : 'text-neutral-400 hover:text-white'
               }`}
             >
               Out of Stock
@@ -238,18 +238,18 @@ export const InventoryView: React.FC = () => {
         {/* Add Product Button */}
         <button
           onClick={openCreateModal}
-          className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-2 rounded-lg flex items-center space-x-2 shadow-lg shadow-blue-500/20 transition-all active:scale-[0.98]"
+          className="bg-yellow-400 hover:bg-yellow-300 text-black text-xs font-black px-4 py-2 rounded-lg flex items-center space-x-2 shadow-lg shadow-yellow-400/20 transition-all active:scale-[0.98]"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-4 h-4 stroke-[3]" />
           <span>Add New Product</span>
         </button>
       </div>
 
       {/* Product Table */}
-      <div className="flex-1 bg-slate-900 border border-slate-800 rounded-xl overflow-hidden flex flex-col">
+      <div className="flex-1 bg-[#121212] border border-neutral-800 rounded-xl overflow-hidden flex flex-col">
         <div className="overflow-y-auto flex-1">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-850 text-slate-400 uppercase font-semibold sticky top-0 border-b border-slate-800">
+            <thead className="bg-[#171717] text-neutral-400 uppercase font-semibold sticky top-0 border-b border-neutral-800">
               <tr>
                 <th className="px-4 py-3">Product Name</th>
                 <th className="px-4 py-3">SKU / Barcode</th>
@@ -261,10 +261,10 @@ export const InventoryView: React.FC = () => {
                 <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800 text-slate-300">
+            <tbody className="divide-y divide-neutral-800 text-neutral-300">
               {filteredProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-12 text-slate-500">
+                  <td colSpan={8} className="text-center py-12 text-neutral-500">
                     No products match the selected criteria.
                   </td>
                 </tr>
@@ -273,24 +273,24 @@ export const InventoryView: React.FC = () => {
                   const isOut = p.stock_qty <= 0;
                   const isLow = p.stock_qty > 0 && p.stock_qty <= 10;
                   return (
-                    <tr key={p.id} className="hover:bg-slate-850/60 transition-colors">
-                      <td className="px-4 py-3 font-semibold text-white">
+                    <tr key={p.id} className="hover:bg-neutral-800/40 transition-colors">
+                      <td className="px-4 py-3 font-bold text-white">
                         {p.name}
                       </td>
-                      <td className="px-4 py-3 font-mono text-slate-400">
+                      <td className="px-4 py-3 font-mono text-neutral-400">
                         <div>{p.sku || '-'}</div>
-                        {p.barcode && <div className="text-[10px] text-slate-500">BC: {p.barcode}</div>}
+                        {p.barcode && <div className="text-[10px] text-neutral-500">BC: {p.barcode}</div>}
                       </td>
                       <td className="px-4 py-3">
-                        <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-medium">
+                        <span className="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800 text-yellow-400 font-semibold text-[11px]">
                           {p.category_name || 'General'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right font-mono font-bold text-emerald-400">
-                        {currency}{p.price.toFixed(2)}
+                      <td className="px-4 py-3 text-right font-mono font-extrabold text-yellow-400">
+                        {currency}{p.price.toFixed(0)}
                       </td>
-                      <td className="px-4 py-3 text-right font-mono text-slate-400">
-                        {currency}{p.cost_price.toFixed(2)}
+                      <td className="px-4 py-3 text-right font-mono text-neutral-400">
+                        {currency}{p.cost_price.toFixed(0)}
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span
@@ -298,32 +298,32 @@ export const InventoryView: React.FC = () => {
                             isOut
                               ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
                               : isLow
-                              ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                              : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                              ? 'bg-yellow-400/10 text-yellow-400 border border-yellow-400/30'
+                              : 'bg-neutral-800 text-white border border-neutral-700'
                           }`}
                         >
                           {p.stock_qty}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <div className="inline-flex items-center space-x-1 bg-slate-800 p-0.5 rounded-lg border border-slate-700">
+                        <div className="inline-flex items-center space-x-1 bg-neutral-900 p-0.5 rounded-lg border border-neutral-800">
                           <button
                             onClick={() => adjustProductStock(p.id, -1)}
-                            className="w-6 h-6 rounded flex items-center justify-center text-slate-400 hover:bg-rose-900/40 hover:text-rose-300"
+                            className="w-6 h-6 rounded flex items-center justify-center text-neutral-400 hover:bg-neutral-800 hover:text-white"
                             title="Decrease by 1"
                           >
                             -1
                           </button>
                           <button
                             onClick={() => adjustProductStock(p.id, 1)}
-                            className="w-6 h-6 rounded flex items-center justify-center text-slate-400 hover:bg-emerald-900/40 hover:text-emerald-300"
+                            className="w-6 h-6 rounded flex items-center justify-center text-neutral-400 hover:bg-neutral-800 hover:text-white"
                             title="Increase by 1"
                           >
                             +1
                           </button>
                           <button
                             onClick={() => adjustProductStock(p.id, 5)}
-                            className="w-6 h-6 rounded flex items-center justify-center text-slate-400 hover:bg-blue-900/40 hover:text-blue-300 text-[10px] font-mono"
+                            className="w-6 h-6 rounded flex items-center justify-center text-yellow-400 hover:bg-neutral-800 hover:text-yellow-300 text-[10px] font-mono font-bold"
                             title="Add 5 units"
                           >
                             +5
@@ -333,9 +333,9 @@ export const InventoryView: React.FC = () => {
                       <td className="px-4 py-3 text-right">
                         <button
                           onClick={() => openEditModal(p)}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg inline-flex items-center space-x-1.5 transition-colors"
+                          className="px-2.5 py-1 bg-neutral-900 hover:bg-neutral-800 text-neutral-300 hover:text-white rounded-lg inline-flex items-center space-x-1.5 transition-colors border border-neutral-800"
                         >
-                          <Edit2 className="w-3.5 h-3.5" />
+                          <Edit2 className="w-3.5 h-3.5 text-yellow-400" />
                           <span>Edit</span>
                         </button>
                       </td>
@@ -350,15 +350,15 @@ export const InventoryView: React.FC = () => {
 
       {/* Add / Edit Product Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-              <h3 className="font-bold text-white text-base">
-                {editingProduct ? 'Edit Product' : 'Add New Product'}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-[#121212] border border-neutral-800 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-neutral-800 flex items-center justify-between bg-[#171717]">
+              <h3 className="font-black text-white text-base">
+                {editingProduct ? 'Edit Menu Product' : 'Add New Menu Product'}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white"
+                className="w-7 h-7 rounded-lg bg-neutral-800 hover:bg-neutral-700 flex items-center justify-center text-neutral-400 hover:text-white"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -366,7 +366,7 @@ export const InventoryView: React.FC = () => {
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-neutral-300 mb-1">
                   Product Name *
                 </label>
                 <input
@@ -374,29 +374,29 @@ export const InventoryView: React.FC = () => {
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
-                  placeholder="e.g. Organic Cold Brew 12oz"
+                  className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-400"
+                  placeholder="e.g. Chicken Tikka Pizza - Large"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">SKU</label>
+                  <label className="block text-xs font-semibold text-neutral-300 mb-1">SKU</label>
                   <input
                     type="text"
                     value={formData.sku}
                     onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-blue-500"
-                    placeholder="BEV-003"
+                    className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-yellow-400"
+                    placeholder="PIZ-TIK-L"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Barcode</label>
+                  <label className="block text-xs font-semibold text-neutral-300 mb-1">Barcode</label>
                   <input
                     type="text"
                     value={formData.barcode}
                     onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-blue-500"
+                    className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-yellow-400"
                     placeholder="8901003"
                   />
                 </div>
@@ -404,50 +404,50 @@ export const InventoryView: React.FC = () => {
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Retail Price ({currency}) *
+                  <label className="block text-xs font-semibold text-neutral-300 mb-1">
+                    Price ({currency}) *
                   </label>
                   <input
                     type="number"
-                    step="0.01"
+                    step="1"
                     required
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-blue-500"
-                    placeholder="4.99"
+                    className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-yellow-400"
+                    placeholder="1200"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Cost Price ({currency})
+                  <label className="block text-xs font-semibold text-neutral-300 mb-1">
+                    Cost ({currency})
                   </label>
                   <input
                     type="number"
-                    step="0.01"
+                    step="1"
                     value={formData.cost_price}
                     onChange={(e) => setFormData({ ...formData, cost_price: e.target.value })}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-blue-500"
-                    placeholder="2.00"
+                    className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-yellow-400"
+                    placeholder="700"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Stock Qty</label>
+                  <label className="block text-xs font-semibold text-neutral-300 mb-1">Stock Qty</label>
                   <input
                     type="number"
                     value={formData.stock_qty}
                     onChange={(e) => setFormData({ ...formData, stock_qty: e.target.value })}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-blue-500"
+                    className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-yellow-400"
                     placeholder="25"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Category</label>
+                <label className="block text-xs font-semibold text-neutral-300 mb-1">Category</label>
                 <select
                   value={formData.category_id}
                   onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
+                  className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-yellow-400"
                 >
                   <option value="">Select Category</option>
                   {categories.map((c) => (
@@ -462,18 +462,18 @@ export const InventoryView: React.FC = () => {
                 </div>
               )}
 
-              <div className="pt-3 border-t border-slate-800 flex justify-end space-x-2">
+              <div className="pt-3 border-t border-neutral-800 flex justify-end space-x-2">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800"
+                  className="px-4 py-2 rounded-lg text-xs font-bold text-neutral-400 hover:text-white hover:bg-neutral-800"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md shadow-blue-500/20"
+                  className="px-5 py-2 rounded-lg bg-yellow-400 hover:bg-yellow-300 text-black text-xs font-black shadow-md shadow-yellow-400/20"
                 >
                   {isSaving ? 'Saving...' : editingProduct ? 'Save Changes' : 'Create Product'}
                 </button>

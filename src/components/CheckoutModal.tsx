@@ -19,7 +19,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const currency = settings.currency_symbol || '$';
+  const currency = settings.currency_symbol || 'Rs. ';
 
   const tenderedAmount = useMemo(() => {
     if (paymentMethod !== 'CASH') return total;
@@ -29,7 +29,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
 
   const changeDue = useMemo(() => {
     if (paymentMethod !== 'CASH') return 0;
-    return Number(Math.max(0, tenderedAmount - total).toFixed(2));
+    return Number(Math.max(0, tenderedAmount - total).toFixed(0));
   }, [paymentMethod, tenderedAmount, total]);
 
   const isTenderSufficient = paymentMethod !== 'CASH' || tenderedAmount >= total;
@@ -42,7 +42,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
 
   const handleCompleteOrder = async () => {
     if (!isTenderSufficient) {
-      setErrorMessage(`Tendered amount is less than total due (${currency}${total.toFixed(2)})`);
+      setErrorMessage(`Tendered amount is less than total due (${currency}${total.toFixed(0)})`);
       return;
     }
 
@@ -74,17 +74,20 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <div className="bg-[#121212] border border-neutral-800 rounded-2xl w-full max-w-xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-neutral-800 flex items-center justify-between bg-[#171717]">
           <div>
-            <h3 className="text-lg font-bold text-white">Complete Sale</h3>
-            <p className="text-xs text-slate-400">Select payment method and finalize invoice</p>
+            <h3 className="text-lg font-black text-white flex items-center space-x-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+              <span>Finalize Customer Payment</span>
+            </h3>
+            <p className="text-xs text-neutral-400 mt-0.5">Select payment mode and confirm bill amount</p>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+            className="w-8 h-8 rounded-lg bg-neutral-800 hover:bg-neutral-700 flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -93,25 +96,27 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
         {/* Content */}
         <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
           {/* Total Banner */}
-          <div className="bg-slate-850 border border-slate-700/60 rounded-xl p-4 flex items-center justify-between">
+          <div className="bg-[#181818] border border-neutral-800 rounded-xl p-4 flex items-center justify-between">
             <div>
-              <span className="text-xs uppercase tracking-wider text-slate-400 font-semibold">Total Amount Due</span>
-              <div className="text-3xl font-bold font-mono text-emerald-400 mt-1">
-                {currency}{total.toFixed(2)}
+              <span className="text-xs uppercase tracking-wider text-neutral-400 font-semibold">Total Payable</span>
+              <div className="text-3xl font-black font-mono text-yellow-400 mt-1">
+                {currency}{total.toFixed(0)}
               </div>
             </div>
-            <div className="text-right text-xs text-slate-400 space-y-0.5">
-              <div>Subtotal: <span className="font-mono text-slate-200">{currency}{subtotal.toFixed(2)}</span></div>
+            <div className="text-right text-xs text-neutral-400 space-y-0.5">
+              <div>Subtotal: <span className="font-mono text-white">{currency}{subtotal.toFixed(0)}</span></div>
               {discountAmount > 0 && (
-                <div className="text-amber-400">Discount: <span className="font-mono">-{currency}{discountAmount.toFixed(2)}</span></div>
+                <div className="text-yellow-400">Discount: <span className="font-mono">-{currency}{discountAmount.toFixed(0)}</span></div>
               )}
-              <div>Tax: <span className="font-mono text-slate-200">+{currency}{taxAmount.toFixed(2)}</span></div>
+              {taxAmount > 0 && (
+                <div>Tax: <span className="font-mono text-white">+{currency}{taxAmount.toFixed(0)}</span></div>
+              )}
             </div>
           </div>
 
           {/* Payment Method Selector */}
           <div>
-            <label className="block text-xs font-semibold uppercase text-slate-400 mb-2">
+            <label className="block text-xs font-bold uppercase text-neutral-400 mb-2">
               Payment Method
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -120,8 +125,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
                 onClick={() => setPaymentMethod('CASH')}
                 className={`flex items-center justify-center space-x-3 p-4 rounded-xl border font-bold text-sm transition-all ${
                   paymentMethod === 'CASH'
-                    ? 'bg-emerald-600/20 border-emerald-500 text-emerald-300 shadow-lg shadow-emerald-500/10'
-                    : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-750'
+                    ? 'bg-yellow-400 text-black border-yellow-400 shadow-lg shadow-yellow-400/20'
+                    : 'bg-neutral-900 border-neutral-800 text-neutral-300 hover:bg-neutral-800'
                 }`}
               >
                 <Banknote className="w-5 h-5" />
@@ -133,50 +138,50 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
                 onClick={() => setPaymentMethod('CARD')}
                 className={`flex items-center justify-center space-x-3 p-4 rounded-xl border font-bold text-sm transition-all ${
                   paymentMethod === 'CARD'
-                    ? 'bg-blue-600/20 border-blue-500 text-blue-300 shadow-lg shadow-blue-500/10'
-                    : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-750'
+                    ? 'bg-yellow-400 text-black border-yellow-400 shadow-lg shadow-yellow-400/20'
+                    : 'bg-neutral-900 border-neutral-800 text-neutral-300 hover:bg-neutral-800'
                 }`}
               >
                 <CreditCard className="w-5 h-5" />
-                <span>Credit / Debit Card</span>
+                <span>Card / POS Machine</span>
               </button>
             </div>
           </div>
 
           {/* Cash Details */}
           {paymentMethod === 'CASH' && (
-            <div className="space-y-4 bg-slate-850/60 p-4 rounded-xl border border-slate-800">
+            <div className="space-y-4 bg-neutral-900/60 p-4 rounded-xl border border-neutral-800">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                <label className="block text-xs font-semibold text-neutral-300 mb-1.5">
                   Tendered Amount ({currency})
                 </label>
                 <input
                   type="number"
-                  step="0.01"
-                  placeholder={total.toFixed(2)}
+                  step="1"
+                  placeholder={total.toFixed(0)}
                   value={tenderedInput}
                   onChange={(e) => setTenderedInput(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-lg font-mono text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-neutral-900 border border-neutral-700 rounded-xl px-4 py-2.5 text-xl font-mono font-bold text-white focus:outline-none focus:border-yellow-400"
                 />
               </div>
 
-              {/* Quick Cash Presets */}
+              {/* Quick Cash Presets (Pakistani Currency Notes) */}
               <div>
-                <span className="text-[11px] text-slate-400 block mb-1.5">Quick Cash Bills:</span>
+                <span className="text-[11px] text-neutral-400 block mb-1.5 font-medium">Quick Cash Notes:</span>
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => handleQuickCash(total)}
-                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-white rounded-lg text-xs font-mono font-medium border border-slate-700"
+                    className="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg text-xs font-mono font-bold border border-neutral-700"
                   >
-                    Exact ({currency}{total.toFixed(2)})
+                    Exact ({currency}{total.toFixed(0)})
                   </button>
                   {[100, 500, 1000, 2000, 5000].map((amt) => (
                     <button
                       key={amt}
                       type="button"
                       onClick={() => handleQuickCash(amt)}
-                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-750 text-white rounded-lg text-xs font-mono font-medium border border-slate-700"
+                      className="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg text-xs font-mono font-semibold border border-neutral-700"
                     >
                       {currency}{amt}
                     </button>
@@ -185,10 +190,10 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
               </div>
 
               {/* Change calculation */}
-              <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
-                <span className="text-sm font-medium text-slate-300">Change Due:</span>
-                <span className={`text-xl font-mono font-bold ${changeDue > 0 ? 'text-emerald-400' : 'text-slate-400'}`}>
-                  {currency}{changeDue.toFixed(2)}
+              <div className="pt-2 border-t border-neutral-800 flex items-center justify-between">
+                <span className="text-sm font-semibold text-neutral-300">Change Due:</span>
+                <span className={`text-2xl font-mono font-extrabold ${changeDue > 0 ? 'text-yellow-400' : 'text-neutral-500'}`}>
+                  {currency}{changeDue.toFixed(0)}
                 </span>
               </div>
             </div>
@@ -204,12 +209,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-slate-850 border-t border-slate-800 flex items-center justify-end space-x-3">
+        <div className="px-6 py-4 bg-[#171717] border-t border-neutral-800 flex items-center justify-end space-x-3">
           <button
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="px-4 py-2.5 rounded-xl text-xs font-bold text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
           >
             Cancel
           </button>
@@ -218,14 +223,14 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
             type="button"
             onClick={handleCompleteOrder}
             disabled={isSubmitting || !isTenderSufficient}
-            className={`px-6 py-2.5 rounded-xl font-bold text-xs flex items-center space-x-2 transition-all ${
+            className={`px-6 py-2.5 rounded-xl font-black text-xs flex items-center space-x-2 transition-all ${
               isSubmitting || !isTenderSufficient
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/25'
+                ? 'bg-neutral-800 text-neutral-600 cursor-not-allowed'
+                : 'bg-yellow-400 hover:bg-yellow-300 text-black shadow-lg shadow-yellow-400/25'
             }`}
           >
-            <CheckCircle className="w-4 h-4" />
-            <span>{isSubmitting ? 'Processing Transaction...' : 'Complete & Generate Receipt'}</span>
+            <CheckCircle className="w-4 h-4 stroke-[2.5]" />
+            <span>{isSubmitting ? 'Processing Bill...' : 'Complete & Print Bill'}</span>
           </button>
         </div>
       </div>
