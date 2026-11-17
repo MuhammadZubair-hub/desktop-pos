@@ -16,7 +16,7 @@ async function createWindow() {
     minWidth: 1024,
     minHeight: 700,
     backgroundColor: '#0F172A',
-    title: 'POS Terminal - Offline Host',
+    title: "OCTOPIZZA'S Fast Food - Offline POS",
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -43,7 +43,7 @@ function registerIpcHandlers() {
     const primaryIp = getPrimaryLanIp();
     const localIps = getLocalIpAddresses();
     const pairingPin = getSetting('pairing_pin', '1234');
-    const storeName = getSetting('store_name', 'Main Counter POS');
+    const storeName = getSetting('store_name', "OCTOPIZZA'S Fast Food");
     const udpStatus = udpBeaconService.getStatus();
     const wsClients = getActiveWsClientCount();
 

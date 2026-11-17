@@ -28,8 +28,9 @@ apiRouter.get('/ping', (req: Request, res: Response) => {
   res.json({
     status: 'ok',
     service: 'POS_LOCAL_SERVER',
-    name: getSetting('store_name', 'Main Counter POS'),
+    name: getSetting('store_name', "OCTOPIZZA'S Fast Food"),
     port: 5000,
+    currency: getSetting('currency_symbol', 'Rs. '),
     primaryIp: getPrimaryLanIp(),
     localIps: getLocalIpAddresses(),
     authenticated: isAuth,

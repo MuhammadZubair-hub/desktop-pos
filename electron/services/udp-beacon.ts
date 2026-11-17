@@ -51,7 +51,7 @@ export class UdpBeaconService {
     if (!this.socket || !this.isRunning) return;
 
     try {
-      const serverName = getSetting('store_name', 'Main Counter POS');
+      const serverName = getSetting('store_name', "OCTOPIZZA'S Fast Food");
       const lanIp = getPrimaryLanIp();
 
       const payload = JSON.stringify({

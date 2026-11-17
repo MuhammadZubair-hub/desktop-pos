@@ -115,153 +115,226 @@ function createTables() {
 }
 
 function seedInitialData() {
-  // Check settings
-  const settingsCount = db.prepare('SELECT COUNT(*) as count FROM settings').get() as { count: number };
-  if (settingsCount.count === 0) {
-    const defaultSettings = [
-      { key: 'pairing_pin', value: '1234' },
-      { key: 'store_name', value: 'Metro Express Mart' },
-      { key: 'store_address', value: '101 Commercial Ave, Suite 4' },
-      { key: 'store_phone', value: '+1 (555) 019-2834' },
-      { key: 'tax_rate', value: '8.5' },
-      { key: 'currency_symbol', value: '$' },
-    ];
-    const insertSetting = db.prepare('INSERT INTO settings (key, value) VALUES (@key, @value)');
-    const insertMany = db.transaction((settings: typeof defaultSettings) => {
-      for (const s of settings) insertSetting.run(s);
-    });
-    insertMany(defaultSettings);
-    console.log('[Database] Default settings seeded (Default Pairing PIN: 1234).');
+  // Store settings for OCTOPIZZA'S Fast Food (Pakistani Rupee Rs.)
+  const defaultSettings = [
+    { key: 'pairing_pin', value: '1234' },
+    { key: 'store_name', value: "OCTOPIZZA'S Fast Food" },
+    { key: 'store_address', value: 'Dhobi Ghat Stop Sunny Biscuit Factory Road Near Cheema Plaza, Lahore' },
+    { key: 'store_phone', value: '0335-6305006 / 0329-9447488' },
+    { key: 'tax_rate', value: '0' },
+    { key: 'currency_symbol', value: 'Rs. ' },
+  ];
+
+  const insertOrReplaceSetting = db.prepare(`
+    INSERT INTO settings (key, value) VALUES (@key, @value)
+    ON CONFLICT(key) DO UPDATE SET value = excluded.value
+  `);
+  for (const s of defaultSettings) {
+    insertOrReplaceSetting.run(s);
+  }
+  console.log("[Database] OCTOPIZZA'S settings configured (Currency: Rs. PKR).");
+
+  // Check if Octopizza menu is already seeded
+  const octoCheck = db.prepare("SELECT COUNT(*) as count FROM products WHERE sku LIKE 'PIZ-%' OR sku LIKE 'BRG-%'").get() as { count: number };
+  if (octoCheck.count > 0) {
+    console.log("[Database] Octopizza menu items already present.");
+    return;
   }
 
-  // Check categories & products
-  const productCount = db.prepare('SELECT COUNT(*) as count FROM products').get() as { count: number };
-  if (productCount.count === 0) {
-    console.log('[Database] Seeding initial sample categories and 10 POS products...');
+  // Clear previous non-restaurant dummy products if any
+  db.prepare("DELETE FROM order_items").run();
+  db.prepare("DELETE FROM orders").run();
+  db.prepare("DELETE FROM products").run();
+  db.prepare("DELETE FROM categories").run();
 
-    const sampleCategories = [
-      'Beverages',
-      'Bakery & Bread',
-      'Snacks & Chips',
-      'Dairy & Eggs',
-      'Pantry Essentials',
-    ];
+  console.log("[Database] Seeding full OCTOPIZZA'S Fast Food restaurant menu...");
 
-    const insertCategory = db.prepare('INSERT OR IGNORE INTO categories (name) VALUES (?)');
-    sampleCategories.forEach((cat) => insertCategory.run(cat));
+  const restaurantCategories = [
+    'Standard Pizzas',
+    'Premium Pizzas',
+    'Special Pizza Offers',
+    'Zinger Burgers',
+    'Patty Burgers',
+    'Grill Burgers',
+    'Wraps & Rolls',
+    'Sandwiches',
+    'Pastas',
+    'Paratha Rolls',
+    'Special Fries',
+    'Fried Chicken',
+    'Value Deals',
+    'Dips & Drinks',
+  ];
 
-    const getCatId = (name: string): number => {
-      const row = db.prepare('SELECT id FROM categories WHERE name = ?').get(name) as { id: number };
-      return row ? row.id : 1;
-    };
+  const insertCategory = db.prepare('INSERT OR IGNORE INTO categories (name) VALUES (?)');
+  restaurantCategories.forEach((cat) => insertCategory.run(cat));
 
-    const sampleProducts = [
-      {
-        name: 'Cold Brew Coffee (12oz)',
-        sku: 'BEV-001',
-        barcode: '8901001',
-        price: 3.99,
-        cost_price: 1.5,
-        stock_qty: 45,
-        category_id: getCatId('Beverages'),
-      },
-      {
-        name: 'Fresh Orange Juice (16oz)',
-        sku: 'BEV-002',
-        barcode: '8901002',
-        price: 4.5,
-        cost_price: 1.8,
-        stock_qty: 30,
-        category_id: getCatId('Beverages'),
-      },
-      {
-        name: 'Butter Croissant',
-        sku: 'BAK-001',
-        barcode: '8902001',
-        price: 2.75,
-        cost_price: 0.9,
-        stock_qty: 25,
-        category_id: getCatId('Bakery & Bread'),
-      },
-      {
-        name: 'Artisanal Sourdough Loaf',
-        sku: 'BAK-002',
-        barcode: '8902002',
-        price: 6.0,
-        cost_price: 2.2,
-        stock_qty: 15,
-        category_id: getCatId('Bakery & Bread'),
-      },
-      {
-        name: 'Kettle Sea Salt Chips',
-        sku: 'SNK-001',
-        barcode: '8903001',
-        price: 2.49,
-        cost_price: 0.95,
-        stock_qty: 60,
-        category_id: getCatId('Snacks & Chips'),
-      },
-      {
-        name: 'Organic Roasted Almonds (150g)',
-        sku: 'SNK-002',
-        barcode: '8903002',
-        price: 5.99,
-        cost_price: 2.8,
-        stock_qty: 40,
-        category_id: getCatId('Snacks & Chips'),
-      },
-      {
-        name: 'Whole Milk 1 Gallon',
-        sku: 'DRY-001',
-        barcode: '8904001',
-        price: 4.29,
-        cost_price: 2.1,
-        stock_qty: 20,
-        category_id: getCatId('Dairy & Eggs'),
-      },
-      {
-        name: 'Farm Fresh Large Eggs (1 Doz)',
-        sku: 'DRY-002',
-        barcode: '8904002',
-        price: 4.89,
-        cost_price: 2.4,
-        stock_qty: 35,
-        category_id: getCatId('Dairy & Eggs'),
-      },
-      {
-        name: 'Extra Virgin Olive Oil (500ml)',
-        sku: 'PAN-001',
-        barcode: '8905001',
-        price: 11.99,
-        cost_price: 6.5,
-        stock_qty: 18,
-        category_id: getCatId('Pantry Essentials'),
-      },
-      {
-        name: 'Himalayan Pink Salt Grinder',
-        sku: 'PAN-002',
-        barcode: '8905002',
-        price: 3.49,
-        cost_price: 1.2,
-        stock_qty: 50,
-        category_id: getCatId('Pantry Essentials'),
-      },
-    ];
+  const getCatId = (name: string): number => {
+    const row = db.prepare('SELECT id FROM categories WHERE name = ?').get(name) as { id: number };
+    return row ? row.id : 1;
+  };
 
-    const insertProduct = db.prepare(`
-      INSERT INTO products (name, sku, barcode, price, cost_price, stock_qty, category_id, is_active)
-      VALUES (@name, @sku, @barcode, @price, @cost_price, @stock_qty, @category_id, 1)
-    `);
+  const menuProducts = [
+    // 1. STANDARD FLAVOURS (Pizzas) - S:500, M:850, L:1200, F:1650
+    { name: 'Chicken Fajita Pizza (Small 7")', sku: 'PIZ-STD-001', barcode: '8901001', price: 500, cost_price: 300, stock_qty: 50, category_id: getCatId('Standard Pizzas') },
+    { name: 'Chicken Fajita Pizza (Medium 10")', sku: 'PIZ-STD-002', barcode: '8901002', price: 850, cost_price: 500, stock_qty: 50, category_id: getCatId('Standard Pizzas') },
+    { name: 'Chicken Fajita Pizza (Large 13")', sku: 'PIZ-STD-003', barcode: '8901003', price: 1200, cost_price: 700, stock_qty: 40, category_id: getCatId('Standard Pizzas') },
+    { name: 'Chicken Fajita Pizza (Family 16")', sku: 'PIZ-STD-004', barcode: '8901004', price: 1650, cost_price: 950, stock_qty: 30, category_id: getCatId('Standard Pizzas') },
 
-    const seedAll = db.transaction((products: typeof sampleProducts) => {
-      for (const p of products) {
-        insertProduct.run(p);
-      }
-    });
+    { name: 'Chicken Tikka Pizza (Small 7")', sku: 'PIZ-STD-005', barcode: '8901005', price: 500, cost_price: 300, stock_qty: 50, category_id: getCatId('Standard Pizzas') },
+    { name: 'Chicken Tikka Pizza (Medium 10")', sku: 'PIZ-STD-006', barcode: '8901006', price: 850, cost_price: 500, stock_qty: 50, category_id: getCatId('Standard Pizzas') },
+    { name: 'Chicken Tikka Pizza (Large 13")', sku: 'PIZ-STD-007', barcode: '8901007', price: 1200, cost_price: 700, stock_qty: 40, category_id: getCatId('Standard Pizzas') },
+    { name: 'Chicken Tikka Pizza (Family 16")', sku: 'PIZ-STD-008', barcode: '8901008', price: 1650, cost_price: 950, stock_qty: 30, category_id: getCatId('Standard Pizzas') },
 
-    seedAll(sampleProducts);
-    console.log('[Database] 10 sample POS products successfully seeded.');
-  }
+    { name: 'Spicy Boti Pizza (Medium 10")', sku: 'PIZ-STD-009', barcode: '8901009', price: 850, cost_price: 500, stock_qty: 40, category_id: getCatId('Standard Pizzas') },
+    { name: 'Spicy Boti Pizza (Large 13")', sku: 'PIZ-STD-010', barcode: '8901010', price: 1200, cost_price: 700, stock_qty: 35, category_id: getCatId('Standard Pizzas') },
+
+    { name: 'Special Arabian Pizza (Medium 10")', sku: 'PIZ-STD-011', barcode: '8901011', price: 850, cost_price: 500, stock_qty: 40, category_id: getCatId('Standard Pizzas') },
+    { name: 'Special Arabian Pizza (Large 13")', sku: 'PIZ-STD-012', barcode: '8901012', price: 1200, cost_price: 700, stock_qty: 35, category_id: getCatId('Standard Pizzas') },
+
+    { name: 'Peri Peri Pizza (Medium 10")', sku: 'PIZ-STD-013', barcode: '8901013', price: 850, cost_price: 500, stock_qty: 40, category_id: getCatId('Standard Pizzas') },
+    { name: 'Seekh Kabab Pizza (Large 13")', sku: 'PIZ-STD-014', barcode: '8901014', price: 1200, cost_price: 700, stock_qty: 35, category_id: getCatId('Standard Pizzas') },
+    { name: 'Veggie Lover Pizza (Medium 10")', sku: 'PIZ-STD-015', barcode: '8901015', price: 850, cost_price: 450, stock_qty: 35, category_id: getCatId('Standard Pizzas') },
+    { name: 'Cheese Pizza (Small 7")', sku: 'PIZ-STD-016', barcode: '8901016', price: 500, cost_price: 280, stock_qty: 40, category_id: getCatId('Standard Pizzas') },
+    { name: 'Cheese Pizza (Medium 10")', sku: 'PIZ-STD-017', barcode: '8901017', price: 850, cost_price: 480, stock_qty: 40, category_id: getCatId('Standard Pizzas') },
+
+    // 2. PREMIUM FLAVOURS (Pizzas) - S:550, M:950, L:1350, F:1850
+    { name: 'Lasania Pizza (Small 7")', sku: 'PIZ-PRM-001', barcode: '8902001', price: 550, cost_price: 330, stock_qty: 40, category_id: getCatId('Premium Pizzas') },
+    { name: 'Lasania Pizza (Medium 10")', sku: 'PIZ-PRM-002', barcode: '8902002', price: 950, cost_price: 550, stock_qty: 40, category_id: getCatId('Premium Pizzas') },
+    { name: 'Lasania Pizza (Large 13")', sku: 'PIZ-PRM-003', barcode: '8902003', price: 1350, cost_price: 780, stock_qty: 35, category_id: getCatId('Premium Pizzas') },
+    { name: 'Lasania Pizza (Family 16")', sku: 'PIZ-PRM-004', barcode: '8902004', price: 1850, cost_price: 1100, stock_qty: 25, category_id: getCatId('Premium Pizzas') },
+
+    { name: 'Bihari Pizza (Medium 10")', sku: 'PIZ-PRM-005', barcode: '8902005', price: 950, cost_price: 550, stock_qty: 35, category_id: getCatId('Premium Pizzas') },
+    { name: 'Bihari Pizza (Large 13")', sku: 'PIZ-PRM-006', barcode: '8902006', price: 1350, cost_price: 780, stock_qty: 30, category_id: getCatId('Premium Pizzas') },
+
+    { name: 'Fajita Sicilian Pizza (Medium 10")', sku: 'PIZ-PRM-007', barcode: '8902007', price: 950, cost_price: 550, stock_qty: 35, category_id: getCatId('Premium Pizzas') },
+    { name: 'Fajita Sicilian Pizza (Large 13")', sku: 'PIZ-PRM-008', barcode: '8902008', price: 1350, cost_price: 780, stock_qty: 30, category_id: getCatId('Premium Pizzas') },
+
+    { name: 'Malai Boti Pizza (Medium 10")', sku: 'PIZ-PRM-009', barcode: '8902009', price: 950, cost_price: 550, stock_qty: 35, category_id: getCatId('Premium Pizzas') },
+    { name: 'Malai Boti Pizza (Large 13")', sku: 'PIZ-PRM-010', barcode: '8902010', price: 1350, cost_price: 780, stock_qty: 30, category_id: getCatId('Premium Pizzas') },
+
+    { name: 'Crown Crust Pizza (Medium 10")', sku: 'PIZ-PRM-011', barcode: '8902011', price: 950, cost_price: 580, stock_qty: 35, category_id: getCatId('Premium Pizzas') },
+    { name: 'Crown Crust Pizza (Large 13")', sku: 'PIZ-PRM-012', barcode: '8902012', price: 1350, cost_price: 820, stock_qty: 30, category_id: getCatId('Premium Pizzas') },
+
+    { name: 'Kabab Crust Pizza (Large 13")', sku: 'PIZ-PRM-013', barcode: '8902013', price: 1350, cost_price: 820, stock_qty: 30, category_id: getCatId('Premium Pizzas') },
+    { name: 'Chicken Supreme Pizza (Large 13")', sku: 'PIZ-PRM-014', barcode: '8902014', price: 1350, cost_price: 800, stock_qty: 35, category_id: getCatId('Premium Pizzas') },
+    { name: 'Octo Special Pizza (Large 13")', sku: 'PIZ-PRM-015', barcode: '8902015', price: 1350, cost_price: 820, stock_qty: 35, category_id: getCatId('Premium Pizzas') },
+    { name: 'Octo Special Pizza (Family 16")', sku: 'PIZ-PRM-016', barcode: '8902016', price: 1850, cost_price: 1100, stock_qty: 25, category_id: getCatId('Premium Pizzas') },
+
+    // 3. PIZZA OFFERS (Double / Family Offers)
+    { name: 'Double Pizza Offer (2 Small 7")', sku: 'OFF-DBL-001', barcode: '8903001', price: 900, cost_price: 550, stock_qty: 50, category_id: getCatId('Special Pizza Offers') },
+    { name: 'Double Pizza Offer (2 Medium 10")', sku: 'OFF-DBL-002', barcode: '8903002', price: 1500, cost_price: 900, stock_qty: 50, category_id: getCatId('Special Pizza Offers') },
+    { name: 'Double Pizza Offer (2 Large 13")', sku: 'OFF-DBL-003', barcode: '8903003', price: 2250, cost_price: 1350, stock_qty: 40, category_id: getCatId('Special Pizza Offers') },
+    { name: 'Family Pizza Offer (3 Small 7")', sku: 'OFF-FAM-001', barcode: '8903004', price: 1500, cost_price: 900, stock_qty: 40, category_id: getCatId('Special Pizza Offers') },
+    { name: 'Family Pizza Offer (3 Medium 10")', sku: 'OFF-FAM-002', barcode: '8903005', price: 2400, cost_price: 1450, stock_qty: 40, category_id: getCatId('Special Pizza Offers') },
+    { name: 'Family Pizza Offer (3 Large 13")', sku: 'OFF-FAM-003', barcode: '8903006', price: 3600, cost_price: 2150, stock_qty: 30, category_id: getCatId('Special Pizza Offers') },
+
+    // 4. ZINGER BURGERS
+    { name: 'Zinger Burger', sku: 'BRG-ZNG-001', barcode: '8904001', price: 330, cost_price: 200, stock_qty: 60, category_id: getCatId('Zinger Burgers') },
+    { name: 'Zinger Cheese Burger', sku: 'BRG-ZNG-002', barcode: '8904002', price: 380, cost_price: 230, stock_qty: 50, category_id: getCatId('Zinger Burgers') },
+    { name: 'Mighty Burger', sku: 'BRG-ZNG-003', barcode: '8904003', price: 480, cost_price: 290, stock_qty: 40, category_id: getCatId('Zinger Burgers') },
+    { name: 'Pizza Zinger Burger', sku: 'BRG-ZNG-004', barcode: '8904004', price: 430, cost_price: 260, stock_qty: 45, category_id: getCatId('Zinger Burgers') },
+    { name: 'Pizza Zinger Large', sku: 'BRG-ZNG-005', barcode: '8904005', price: 500, cost_price: 300, stock_qty: 35, category_id: getCatId('Zinger Burgers') },
+    { name: 'Pizza Zinger Tower Burger', sku: 'BRG-ZNG-006', barcode: '8904006', price: 550, cost_price: 340, stock_qty: 30, category_id: getCatId('Zinger Burgers') },
+    { name: 'Octo Fillet Burger', sku: 'BRG-ZNG-007', barcode: '8904007', price: 420, cost_price: 250, stock_qty: 40, category_id: getCatId('Zinger Burgers') },
+    { name: 'Octo Special Burger', sku: 'BRG-ZNG-008', barcode: '8904008', price: 390, cost_price: 235, stock_qty: 45, category_id: getCatId('Zinger Burgers') },
+
+    // 5. PATTY BURGERS
+    { name: 'Patty Burger', sku: 'BRG-PAT-001', barcode: '8905001', price: 220, cost_price: 130, stock_qty: 60, category_id: getCatId('Patty Burgers') },
+    { name: 'Double Patty Cheese Burger', sku: 'BRG-PAT-002', barcode: '8905002', price: 320, cost_price: 190, stock_qty: 50, category_id: getCatId('Patty Burgers') },
+    { name: 'Chapli Burger', sku: 'BRG-PAT-003', barcode: '8905003', price: 220, cost_price: 130, stock_qty: 50, category_id: getCatId('Patty Burgers') },
+    { name: 'Double Chapli Patty Cheese', sku: 'BRG-PAT-004', barcode: '8905004', price: 350, cost_price: 210, stock_qty: 40, category_id: getCatId('Patty Burgers') },
+    { name: 'Fish Patty Burger', sku: 'BRG-PAT-005', barcode: '8905006', price: 330, cost_price: 200, stock_qty: 35, category_id: getCatId('Patty Burgers') },
+    { name: 'Double Fish Patty Cheese', sku: 'BRG-PAT-006', barcode: '8905007', price: 480, cost_price: 290, stock_qty: 30, category_id: getCatId('Patty Burgers') },
+
+    // 6. GRILL BURGERS
+    { name: 'Grill Burger', sku: 'BRG-GRL-001', barcode: '8906001', price: 400, cost_price: 240, stock_qty: 40, category_id: getCatId('Grill Burgers') },
+    { name: 'Jalapeno Grill Burger', sku: 'BRG-GRL-002', barcode: '8906002', price: 500, cost_price: 300, stock_qty: 35, category_id: getCatId('Grill Burgers') },
+    { name: 'Grill Double Batta Burger', sku: 'BRG-GRL-003', barcode: '8906003', price: 550, cost_price: 330, stock_qty: 30, category_id: getCatId('Grill Burgers') },
+
+    // 7. WRAPS & ROLLS
+    { name: 'Zingarella Wrap', sku: 'WRP-001', barcode: '8907001', price: 400, cost_price: 240, stock_qty: 40, category_id: getCatId('Wraps & Rolls') },
+    { name: 'Octo Special Wrap', sku: 'WRP-002', barcode: '8907002', price: 400, cost_price: 240, stock_qty: 40, category_id: getCatId('Wraps & Rolls') },
+    { name: 'Grill Wrap', sku: 'WRP-003', barcode: '8907003', price: 400, cost_price: 240, stock_qty: 40, category_id: getCatId('Wraps & Rolls') },
+    { name: 'Jumbo Wrap', sku: 'WRP-004', barcode: '8907004', price: 450, cost_price: 270, stock_qty: 35, category_id: getCatId('Wraps & Rolls') },
+    { name: 'Twister Wrap', sku: 'WRP-005', barcode: '8907005', price: 350, cost_price: 210, stock_qty: 40, category_id: getCatId('Wraps & Rolls') },
+    { name: 'Shawarma Roll', sku: 'WRP-006', barcode: '8907006', price: 250, cost_price: 150, stock_qty: 50, category_id: getCatId('Wraps & Rolls') },
+    { name: 'Bihari Roll', sku: 'WRP-007', barcode: '8907007', price: 300, cost_price: 180, stock_qty: 45, category_id: getCatId('Wraps & Rolls') },
+
+    // 8. SANDWICHES
+    { name: 'Club Sandwich', sku: 'SND-001', barcode: '8908001', price: 320, cost_price: 190, stock_qty: 40, category_id: getCatId('Sandwiches') },
+    { name: 'Pizza Sandwich', sku: 'SND-002', barcode: '8908002', price: 380, cost_price: 230, stock_qty: 35, category_id: getCatId('Sandwiches') },
+    { name: 'Malai Boti Sandwich', sku: 'SND-003', barcode: '8908003', price: 380, cost_price: 230, stock_qty: 35, category_id: getCatId('Sandwiches') },
+    { name: 'Grill Sandwich', sku: 'SND-004', barcode: '8908004', price: 380, cost_price: 230, stock_qty: 35, category_id: getCatId('Sandwiches') },
+    { name: 'Chicken Fajita Sandwich', sku: 'SND-005', barcode: '8908005', price: 350, cost_price: 210, stock_qty: 40, category_id: getCatId('Sandwiches') },
+
+    // 9. PASTAS
+    { name: 'Creamy Pasta', sku: 'PST-001', barcode: '8909001', price: 500, cost_price: 300, stock_qty: 30, category_id: getCatId('Pastas') },
+    { name: 'Crunchy Pasta', sku: 'PST-002', barcode: '8909002', price: 550, cost_price: 330, stock_qty: 30, category_id: getCatId('Pastas') },
+    { name: 'Alfredo Pasta', sku: 'PST-003', barcode: '8909003', price: 600, cost_price: 360, stock_qty: 30, category_id: getCatId('Pastas') },
+
+    // 10. PARATHA ROLLS
+    { name: 'Boti Paratha', sku: 'PRT-001', barcode: '8910001', price: 250, cost_price: 150, stock_qty: 50, category_id: getCatId('Paratha Rolls') },
+    { name: 'Malai Boti Paratha', sku: 'PRT-002', barcode: '8910002', price: 300, cost_price: 180, stock_qty: 45, category_id: getCatId('Paratha Rolls') },
+    { name: 'Grill Paratha', sku: 'PRT-003', barcode: '8910003', price: 300, cost_price: 180, stock_qty: 40, category_id: getCatId('Paratha Rolls') },
+    { name: 'Kabab Roll Paratha', sku: 'PRT-004', barcode: '8910004', price: 280, cost_price: 170, stock_qty: 40, category_id: getCatId('Paratha Rolls') },
+    { name: 'Pizza Paratha', sku: 'PRT-005', barcode: '8910005', price: 300, cost_price: 180, stock_qty: 40, category_id: getCatId('Paratha Rolls') },
+    { name: 'Zinger Paratha', sku: 'PRT-006', barcode: '8910006', price: 300, cost_price: 180, stock_qty: 45, category_id: getCatId('Paratha Rolls') },
+
+    // 11. SPECIAL FRIES
+    { name: 'Supreme Loaded Fries', sku: 'FRS-001', barcode: '8911001', price: 600, cost_price: 350, stock_qty: 50, category_id: getCatId('Special Fries') },
+    { name: 'Zingarella Loaded Fries', sku: 'FRS-002', barcode: '8911002', price: 550, cost_price: 320, stock_qty: 45, category_id: getCatId('Special Fries') },
+    { name: 'Pizza Fries', sku: 'FRS-003', barcode: '8911003', price: 500, cost_price: 290, stock_qty: 45, category_id: getCatId('Special Fries') },
+    { name: 'Mayo Garlic Fries', sku: 'FRS-004', barcode: '8911004', price: 300, cost_price: 160, stock_qty: 50, category_id: getCatId('Special Fries') },
+    { name: 'Masala Fries', sku: 'FRS-005', barcode: '8911005', price: 250, cost_price: 130, stock_qty: 50, category_id: getCatId('Special Fries') },
+    { name: 'Family Fries', sku: 'FRS-006', barcode: '8911006', price: 250, cost_price: 130, stock_qty: 50, category_id: getCatId('Special Fries') },
+    { name: 'Regular Fries', sku: 'FRS-007', barcode: '8911007', price: 150, cost_price: 80, stock_qty: 80, category_id: getCatId('Special Fries') },
+
+    // 12. FRIED CHICKEN
+    { name: '5 Hot Wings', sku: 'CHK-001', barcode: '8912001', price: 250, cost_price: 140, stock_qty: 50, category_id: getCatId('Fried Chicken') },
+    { name: '10 Hot Wings', sku: 'CHK-002', barcode: '8912002', price: 450, cost_price: 260, stock_qty: 40, category_id: getCatId('Fried Chicken') },
+    { name: '5 Pcs Nuggets', sku: 'CHK-003', barcode: '8912003', price: 250, cost_price: 140, stock_qty: 50, category_id: getCatId('Fried Chicken') },
+    { name: '10 Pcs Nuggets', sku: 'CHK-004', barcode: '8912004', price: 450, cost_price: 260, stock_qty: 40, category_id: getCatId('Fried Chicken') },
+
+    // 13. VALUE DEALS & COMBOS
+    { name: 'Deal 1 (1 Large + 1 Med Pizza + 1.5L Drink)', sku: 'DL-001', barcode: '8913001', price: 2099, cost_price: 1300, stock_qty: 50, category_id: getCatId('Value Deals') },
+    { name: 'Deal 2 (1 Large Pizza + 2 Patty + Fries + 1.5L)', sku: 'DL-002', barcode: '8913002', price: 1949, cost_price: 1200, stock_qty: 50, category_id: getCatId('Value Deals') },
+    { name: 'Deal 3 (1 Med Pizza + 1 Zinger + Fries + 2 Drinks)', sku: 'DL-003', barcode: '8913003', price: 1299, cost_price: 800, stock_qty: 50, category_id: getCatId('Value Deals') },
+    { name: 'Deal 4 (2 Zinger Burgers + Fries + 2 Drinks)', sku: 'DL-004', barcode: '8913004', price: 1299, cost_price: 750, stock_qty: 50, category_id: getCatId('Value Deals') },
+    { name: 'Deal 5 (1 Small Pizza + 1 Zinger + Fries + 1 Drink)', sku: 'DL-005', barcode: '8913005', price: 999, cost_price: 600, stock_qty: 50, category_id: getCatId('Value Deals') },
+    { name: 'Deal 6 (1 Club Sandwich + 2 Wings + Fries + 1 Drink)', sku: 'DL-006', barcode: '8913006', price: 749, cost_price: 450, stock_qty: 50, category_id: getCatId('Value Deals') },
+    { name: 'Deal 7 (1 Zinger Paratha + Fries + 1 Drink)', sku: 'DL-007', barcode: '8913007', price: 749, cost_price: 450, stock_qty: 50, category_id: getCatId('Value Deals') },
+    { name: 'Friends Deal (Small Pizza + Sandwich + Zinger + Fries + 4 Nuggets + 1.5L)', sku: 'DL-FRN', barcode: '8913008', price: 2249, cost_price: 1400, stock_qty: 40, category_id: getCatId('Value Deals') },
+    { name: 'Couple Deal (Small Pizza + 4 Wings + Fries + 2 Drinks)', sku: 'DL-CPL', barcode: '8913009', price: 1249, cost_price: 750, stock_qty: 40, category_id: getCatId('Value Deals') },
+    { name: '5 Zinger Deal (5 Zinger Burgers + 1.5 Ltr Drink)', sku: 'DL-ZNG-5', barcode: '8913010', price: 1750, cost_price: 1100, stock_qty: 40, category_id: getCatId('Value Deals') },
+    { name: '5 Patty Deal (5 Patty Burgers + 1.5 Ltr Drink)', sku: 'DL-PAT-5', barcode: '8913011', price: 1250, cost_price: 750, stock_qty: 40, category_id: getCatId('Value Deals') },
+    { name: '5 Paratha Deal (5 Boti Parathas + 1.5 Ltr Drink)', sku: 'DL-PRT-5', barcode: '8913012', price: 1350, cost_price: 850, stock_qty: 40, category_id: getCatId('Value Deals') },
+
+    // 14. DIPS & DRINKS
+    { name: 'Cocktail Sauce', sku: 'DIP-001', barcode: '8914001', price: 50, cost_price: 25, stock_qty: 100, category_id: getCatId('Dips & Drinks') },
+    { name: 'Chipotle Sauce', sku: 'DIP-002', barcode: '8914002', price: 50, cost_price: 25, stock_qty: 100, category_id: getCatId('Dips & Drinks') },
+    { name: 'Octo Special Sauce', sku: 'DIP-003', barcode: '8914003', price: 50, cost_price: 25, stock_qty: 100, category_id: getCatId('Dips & Drinks') },
+    { name: 'Mustard Sauce', sku: 'DIP-004', barcode: '8914004', price: 50, cost_price: 25, stock_qty: 100, category_id: getCatId('Dips & Drinks') },
+    { name: 'Cold Drink (345 ml)', sku: 'BEV-345', barcode: '8914005', price: 70, cost_price: 45, stock_qty: 150, category_id: getCatId('Dips & Drinks') },
+    { name: 'Cold Drink (1.5 Ltr)', sku: 'BEV-15L', barcode: '8914006', price: 200, cost_price: 140, stock_qty: 80, category_id: getCatId('Dips & Drinks') },
+    { name: 'Extra Cheese / Topping (Small)', sku: 'EXT-SML', barcode: '8914007', price: 80, cost_price: 40, stock_qty: 100, category_id: getCatId('Dips & Drinks') },
+    { name: 'Extra Cheese / Topping (Medium)', sku: 'EXT-MED', barcode: '8914008', price: 100, cost_price: 55, stock_qty: 100, category_id: getCatId('Dips & Drinks') },
+    { name: 'Extra Cheese / Topping (Large)', sku: 'EXT-LRG', barcode: '8914009', price: 150, cost_price: 80, stock_qty: 100, category_id: getCatId('Dips & Drinks') },
+  ];
+
+  const insertProduct = db.prepare(`
+    INSERT INTO products (name, sku, barcode, price, cost_price, stock_qty, category_id, is_active)
+    VALUES (@name, @sku, @barcode, @price, @cost_price, @stock_qty, @category_id, 1)
+  `);
+
+  const seedAll = db.transaction((products: typeof menuProducts) => {
+    for (const p of products) {
+      insertProduct.run(p);
+    }
+  });
+
+  seedAll(menuProducts);
+  console.log(`[Database] Successfully seeded ${menuProducts.length} OCTOPIZZA'S products across ${restaurantCategories.length} categories.`);
 }
 
 // =================== Queries & Operations ===================

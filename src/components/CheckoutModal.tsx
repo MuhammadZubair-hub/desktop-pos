@@ -171,7 +171,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
                   >
                     Exact ({currency}{total.toFixed(2)})
                   </button>
-                  {[5, 10, 20, 50, 100].map((amt) => (
+                  {[100, 500, 1000, 2000, 5000].map((amt) => (
                     <button
                       key={amt}
                       type="button"

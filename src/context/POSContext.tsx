@@ -32,10 +32,12 @@ export const POSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [salesSummary, setSalesSummary] = useState<SalesSummary | null>(null);
   const [serverStatus, setServerStatus] = useState<ServerStatus | null>(null);
   const [settings, setSettings] = useState<Record<string, string>>({
-    store_name: 'Metro Express Mart',
+    store_name: "OCTOPIZZA'S Fast Food",
+    store_address: "Dhobi Ghat Stop Sunny Biscuit Factory Road Near Cheema Plaza, Lahore",
+    store_phone: "0335-6305006 / 0329-9447488",
     pairing_pin: '1234',
-    tax_rate: '8.5',
-    currency_symbol: '$',
+    tax_rate: '0',
+    currency_symbol: 'Rs. ',
   });
   const [isWsConnected, setIsWsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
