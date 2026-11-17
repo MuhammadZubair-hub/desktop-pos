@@ -1,65 +1,14 @@
-import React from 'react';
-import { Plus, Minus, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plus, Minus } from 'lucide-react';
 import { Product } from '../types/pos';
 import { usePOS } from '../context/POSContext';
 import { useCart } from '../context/CartContext';
+import { getProductImage } from '../utils/productImages';
 
 interface ProductCardProps {
   product: Product;
   onSelect: (product: Product) => void;
 }
-
-// Visual category badges with appetizing warm food icons & gradients
-const getCategoryVisual = (categoryName?: string) => {
-  const cat = (categoryName || '').toLowerCase();
-  if (cat.includes('pizza')) {
-    return {
-      bg: 'from-amber-500/20 via-orange-500/15 to-yellow-500/10',
-      icon: '🍕',
-      label: 'Artisan Pizza',
-    };
-  }
-  if (cat.includes('zinger') || cat.includes('burger')) {
-    return {
-      bg: 'from-yellow-500/25 via-amber-500/15 to-orange-500/10',
-      icon: '🍔',
-      label: 'Crispy Burger',
-    };
-  }
-  if (cat.includes('wrap') || cat.includes('roll')) {
-    return {
-      bg: 'from-emerald-500/20 via-yellow-500/15 to-amber-500/10',
-      icon: '🌯',
-      label: 'Grilled Wrap',
-    };
-  }
-  if (cat.includes('pasta')) {
-    return {
-      bg: 'from-orange-500/20 via-red-500/10 to-yellow-500/10',
-      icon: '🍝',
-      label: 'Italian Pasta',
-    };
-  }
-  if (cat.includes('fries') || cat.includes('chicken')) {
-    return {
-      bg: 'from-yellow-500/20 via-amber-500/15 to-orange-500/10',
-      icon: '🍟',
-      label: 'Sides & Crispy',
-    };
-  }
-  if (cat.includes('deal') || cat.includes('offer')) {
-    return {
-      bg: 'from-rose-500/20 via-yellow-500/20 to-amber-500/15',
-      icon: '⭐',
-      label: 'Special Deal',
-    };
-  }
-  return {
-    bg: 'from-slate-200 via-slate-100 to-slate-50',
-    icon: '🍽️',
-    label: 'Fast Food',
-  };
-};
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect }) => {
   const { settings } = usePOS();
@@ -70,7 +19,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect }) =
   const cartQty = cartItem ? cartItem.qty : 0;
   const isOutOfStock = product.stock_qty <= 0;
 
-  const visual = getCategoryVisual(product.category_name);
+  const imageUrl = getProductImage(product.name, product.category_name);
+  const [imgError, setImgError] = useState(false);
 
   // Generate an authentic subtitle/description if not present
   const getSubDesc = () => {
@@ -80,38 +30,57 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect }) =
     if (name.includes('patty') || name.includes('burger')) return 'Juicy seasoned grilled patty, fresh veggies & special house dressing';
     if (name.includes('roll') || name.includes('wrap')) return 'Grilled tender chicken cubes wrapped in soft paratha with zesty chutney';
     if (name.includes('pasta')) return 'Creamy pasta baked with golden cheese, mushrooms & chicken chunks';
+    if (name.includes('fries')) return 'Crispy potato fries seasoned with chef special spices';
     if (name.includes('deal')) return 'Value meal combo pack served fresh for quick sharing';
     return 'Delicious chef-prepared fast food specialty';
   };
 
   return (
     <div
-      className={`bg-white rounded-2xl border transition-all flex flex-col justify-between overflow-hidden group select-none shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-md ${
+      className={`bg-white rounded-2xl border transition-all flex flex-col justify-between overflow-hidden group select-none shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-lg ${
         isOutOfStock
           ? 'border-slate-200 opacity-60'
-          : 'border-slate-200/90 hover:border-yellow-400/80 hover:-translate-y-0.5'
+          : 'border-slate-200/90 hover:border-yellow-400 hover:-translate-y-0.5'
       }`}
     >
-      {/* Top Visual Area (as shown in Behance screenshot cards) */}
-      <div className={`h-24 bg-gradient-to-br ${visual.bg} relative p-3 flex items-center justify-between border-b border-slate-100`}>
-        <div className="w-12 h-12 rounded-xl bg-white/90 shadow-sm flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-          {visual.icon}
+      {/* Top Food Photography Banner (Zillo Behance Style) */}
+      <div className="h-32 relative overflow-hidden bg-slate-900">
+        {!imgError ? (
+          <img
+            src={imageUrl}
+            alt={product.name}
+            onError={() => setImgError(true)}
+            className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-amber-500/20 via-yellow-500/15 to-orange-500/20 flex items-center justify-center text-4xl">
+            🍕
+          </div>
+        )}
+
+        {/* Subtle gradient overlay for contrast */}
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-black/20" />
+
+        {/* Floating Category Tag */}
+        <div className="absolute top-2.5 left-2.5">
+          <span className="text-[10px] font-black uppercase tracking-wider text-slate-900 bg-white/95 backdrop-blur-xs px-2.5 py-0.5 rounded-lg shadow-sm border border-white/60">
+            {product.category_name || 'Fast Food'}
+          </span>
         </div>
 
-        <div className="flex flex-col items-end space-y-1">
-          <span className="text-[10px] font-black uppercase tracking-wider text-slate-800 bg-white/95 px-2 py-0.5 rounded-md shadow-xs border border-slate-200/60">
-            {product.category_name || visual.label}
-          </span>
+        {/* Stock Status Badge */}
+        <div className="absolute top-2.5 right-2.5">
           {isOutOfStock ? (
-            <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
+            <span className="text-[10px] font-black text-rose-600 bg-white/95 px-2 py-0.5 rounded-lg shadow-sm">
               Out of stock
             </span>
           ) : product.stock_qty <= 10 ? (
-            <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+            <span className="text-[10px] font-black text-amber-700 bg-white/95 px-2 py-0.5 rounded-lg shadow-sm">
               {product.stock_qty} left
             </span>
           ) : (
-            <span className="text-[10px] font-mono text-slate-600 bg-white/80 px-1.5 py-0.5 rounded">
+            <span className="text-[10px] font-mono font-bold text-white bg-black/60 backdrop-blur-xs px-2 py-0.5 rounded-lg">
               Stock: {product.stock_qty}
             </span>
           )}
@@ -129,7 +98,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect }) =
           </p>
         </div>
 
-        {/* Bottom Row: Price & Add / Quantity Selector (Zillo Behance style) */}
+        {/* Bottom Row: Price & Add / Quantity Selector */}
         <div className="flex items-center justify-between pt-3 mt-2 border-t border-slate-100">
           <div>
             <span className="text-base font-black text-slate-950 font-mono">

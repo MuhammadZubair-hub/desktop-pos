@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { usePOS } from '../context/POSContext';
+import { getProductImage } from '../utils/productImages';
 
 interface CartDrawerProps {
   onOpenCheckout: () => void;
@@ -109,12 +110,17 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onOpenCheckout, onQuickP
               key={item.product.id}
               className="bg-white border border-slate-200/90 rounded-2xl p-3 shadow-xs flex flex-col space-y-2 hover:border-yellow-400/80 transition-all"
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1 pr-2">
-                  <h4 className="text-xs font-black text-slate-900 leading-tight">
+              <div className="flex items-start justify-between space-x-2.5">
+                <img
+                  src={getProductImage(item.product.name, item.product.category_name)}
+                  alt={item.product.name}
+                  className="w-10 h-10 rounded-xl object-cover shrink-0 border border-slate-200 shadow-2xs"
+                />
+                <div className="flex-1 pr-1">
+                  <h4 className="text-xs font-black text-slate-900 leading-tight line-clamp-1">
                     {item.qty}x {item.product.name}
                   </h4>
-                  <div className="text-[10px] text-slate-600 mt-0.5">
+                  <div className="text-[10px] text-slate-500 mt-0.5 font-mono">
                     {currency}{item.unitPrice.toFixed(0)} each
                   </div>
                 </div>
