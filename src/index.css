@@ -4,24 +4,24 @@
 
 @layer base {
   body {
-    @apply bg-black text-white font-sans antialiased overflow-hidden select-none;
+    @apply bg-[#F8FAFC] text-slate-900 font-sans antialiased overflow-hidden select-none;
   }
 }
 
-/* Custom black & yellow scrollbars */
+/* Custom modern scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #111111;
+  background: #F1F5F9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #333333;
+  background: #CBD5E1;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #EAB308;
+  background: #FACC15;
 }
 
 /* Hide scrollbar for category pills bar */
@@ -33,7 +33,7 @@
   scrollbar-width: none;
 }
 
-/* Thermal Receipt Print Styles */
+/* Print Styles for Thermal Receipts & Full Sales Reports */
 @media print {
   body * {
     visibility: hidden;
@@ -47,8 +47,22 @@
     top: 0;
     width: 80mm;
     margin: 0;
-    padding: 10px;
-    box-shadow: none;
-    border: none;
+    padding: 8px;
+    background: white !important;
+    color: black !important;
+  }
+
+  #sales-report-print, #sales-report-print * {
+    visibility: visible;
+  }
+  #sales-report-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 24px;
+    background: white !important;
+    color: black !important;
   }
 }

@@ -9,6 +9,7 @@ import {
   createOrderTransaction,
   getOrders,
   getTodaySummary,
+  getSalesReport,
   getAllSettings,
   setSetting,
   getSetting,
@@ -121,6 +122,29 @@ apiRouter.get('/orders', (req: Request, res: Response) => {
     });
   } catch (err: any) {
     res.status(500).json({ error: 'Failed to fetch orders', details: err.message });
+  }
+});
+
+// GET /api/reports/sales -> Daily, weekly, monthly and custom sales reports with analytics
+apiRouter.get('/reports/sales', (req: Request, res: Response) => {
+  try {
+    const period = (req.query.period as any) || 'daily';
+    const date = req.query.date ? String(req.query.date) : undefined;
+    const month = req.query.month ? String(req.query.month) : undefined;
+    const startDate = req.query.startDate ? String(req.query.startDate) : undefined;
+    const endDate = req.query.endDate ? String(req.query.endDate) : undefined;
+
+    const report = getSalesReport({
+      period,
+      date,
+      month,
+      startDate,
+      endDate,
+    });
+
+    res.json(report);
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to generate sales report', details: err.message });
   }
 });
 

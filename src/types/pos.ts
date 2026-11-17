@@ -94,6 +94,60 @@ export interface BackupItem {
   path: string;
 }
 
+export interface CategorySalesItem {
+  categoryName: string;
+  itemsSold: number;
+  revenue: number;
+  percentage?: number;
+}
+
+export interface TopProductItem {
+  productName: string;
+  qtySold: number;
+  revenue: number;
+}
+
+export interface TimeTrendItem {
+  label: string;
+  orders: number;
+  revenue: number;
+}
+
+export interface SalesReportFilter {
+  period?: 'daily' | 'weekly' | 'monthly' | 'custom';
+  date?: string;
+  month?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface SalesReportData {
+  filter: {
+    period: 'daily' | 'weekly' | 'monthly' | 'custom';
+    displayRange: string;
+    startDate: string;
+    endDate: string;
+  };
+  summary: {
+    totalRevenue: number;
+    subtotal: number;
+    totalDiscount: number;
+    totalTax: number;
+    orderCount: number;
+    averageOrderValue: number;
+    cashRevenue: number;
+    cardRevenue: number;
+    otherRevenue: number;
+    desktopOrders: number;
+    mobileOrders: number;
+    itemsSoldTotal: number;
+  };
+  categorySales: CategorySalesItem[];
+  topProducts: TopProductItem[];
+  trend: TimeTrendItem[];
+  orders: OrderWithItems[];
+}
+
 declare global {
   interface Window {
     electronAPI?: {
@@ -102,6 +156,7 @@ declare global {
       getBackups: () => Promise<BackupItem[]>;
       getSettings: () => Promise<Record<string, string>>;
       updateSetting: (key: string, value: string) => Promise<any>;
+      getSalesReport: (filter?: SalesReportFilter) => Promise<SalesReportData>;
       printReceipt: (receiptData: any) => Promise<any>;
       onServerEvent: (callback: (event: any) => void) => () => void;
       platform: string;

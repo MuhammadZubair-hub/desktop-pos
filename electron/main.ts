@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
-import { initDatabase, closeDatabase, getAllSettings, setSetting, getSetting } from './db';
+import { initDatabase, closeDatabase, getAllSettings, setSetting, getSetting, getSalesReport } from './db';
 import { startDailyBackupScheduler, stopBackupScheduler, performBackup, listBackups } from './db/backup';
 import { startApiServer, stopApiServer, getActiveWsClientCount } from './server';
 import { udpBeaconService } from './services/udp-beacon';
@@ -75,6 +75,10 @@ function registerIpcHandlers() {
   ipcMain.handle('pos:update-setting', async (_event, { key, value }) => {
     setSetting(key, String(value));
     return { success: true, key, value };
+  });
+
+  ipcMain.handle('pos:get-sales-report', async (_event, filter) => {
+    return getSalesReport(filter || {});
   });
 
   ipcMain.handle('pos:print-receipt', async (_event, receiptData) => {

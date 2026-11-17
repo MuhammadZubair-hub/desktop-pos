@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Product, Category, OrderWithItems, SalesSummary, ServerStatus, Setting } from '../types/pos';
+import { Product, Category, OrderWithItems, SalesSummary, ServerStatus, Setting, SalesReportFilter, SalesReportData } from '../types/pos';
 
 interface POSContextType {
   products: Product[];
@@ -17,6 +17,7 @@ interface POSContextType {
   saveProduct: (product: Partial<Product>, id?: number) => Promise<Product>;
   adjustProductStock: (id: number, delta: number) => Promise<void>;
   submitOrder: (orderInput: any) => Promise<OrderWithItems>;
+  fetchSalesReport: (filter: SalesReportFilter) => Promise<SalesReportData>;
   triggerManualBackup: () => Promise<{ success: boolean; message: string }>;
 }
 
@@ -266,6 +267,33 @@ export const POSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return order;
   };
 
+  const fetchSalesReport = async (filter: SalesReportFilter): Promise<SalesReportData> => {
+    if (window.electronAPI && window.electronAPI.getSalesReport) {
+      try {
+        const report = await window.electronAPI.getSalesReport(filter);
+        if (report) return report;
+      } catch (e) {
+        console.warn('[POSContext] IPC getSalesReport failed, using HTTP:', e);
+      }
+    }
+
+    const params = new URLSearchParams();
+    if (filter.period) params.append('period', filter.period);
+    if (filter.date) params.append('date', filter.date);
+    if (filter.month) params.append('month', filter.month);
+    if (filter.startDate) params.append('startDate', filter.startDate);
+    if (filter.endDate) params.append('endDate', filter.endDate);
+
+    const res = await fetch(`${API_BASE}/reports/sales?${params.toString()}`, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to generate sales report');
+    }
+    return await res.json();
+  };
+
   const triggerManualBackup = async (): Promise<{ success: boolean; message: string }> => {
     if (window.electronAPI) {
       return await window.electronAPI.triggerBackup();
@@ -292,6 +320,7 @@ export const POSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         saveProduct,
         adjustProductStock,
         submitOrder,
+        fetchSalesReport,
         triggerManualBackup,
       }}
     >

@@ -74,75 +74,75 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-[#121212] border border-neutral-800 rounded-2xl w-full max-w-xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+      <div className="bg-white border border-slate-200/90 rounded-3xl w-full max-w-xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-neutral-800 flex items-center justify-between bg-[#171717]">
+        <div className="px-6 py-4.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
           <div>
-            <h3 className="text-lg font-black text-white flex items-center space-x-2">
+            <h3 className="text-lg font-black text-slate-900 flex items-center space-x-2">
               <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
-              <span>Finalize Customer Payment</span>
+              <span>Finalize Payment</span>
             </h3>
-            <p className="text-xs text-neutral-400 mt-0.5">Select payment mode and confirm bill amount</p>
+            <p className="text-xs text-slate-500 mt-0.5">Select payment mode and collect bill amount</p>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-neutral-800 hover:bg-neutral-700 flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
+            className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-800 transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 stroke-[2.5]" />
           </button>
         </div>
 
         {/* Content */}
         <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
-          {/* Total Banner */}
-          <div className="bg-[#181818] border border-neutral-800 rounded-xl p-4 flex items-center justify-between">
+          {/* Total Payable Box */}
+          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 flex items-center justify-between">
             <div>
-              <span className="text-xs uppercase tracking-wider text-neutral-400 font-semibold">Total Payable</span>
-              <div className="text-3xl font-black font-mono text-yellow-400 mt-1">
+              <span className="text-xs uppercase tracking-wider text-slate-500 font-bold">Total Amount Due</span>
+              <div className="text-3xl font-black font-mono text-slate-950 mt-1">
                 {currency}{total.toFixed(0)}
               </div>
             </div>
-            <div className="text-right text-xs text-neutral-400 space-y-0.5">
-              <div>Subtotal: <span className="font-mono text-white">{currency}{subtotal.toFixed(0)}</span></div>
+            <div className="text-right text-xs text-slate-500 space-y-0.5">
+              <div>Subtotal: <span className="font-mono font-bold text-slate-800">{currency}{subtotal.toFixed(0)}</span></div>
               {discountAmount > 0 && (
-                <div className="text-yellow-400">Discount: <span className="font-mono">-{currency}{discountAmount.toFixed(0)}</span></div>
+                <div className="text-amber-600 font-bold">Discount: <span className="font-mono">-{currency}{discountAmount.toFixed(0)}</span></div>
               )}
               {taxAmount > 0 && (
-                <div>Tax: <span className="font-mono text-white">+{currency}{taxAmount.toFixed(0)}</span></div>
+                <div>GST / Tax: <span className="font-mono font-bold text-slate-800">+{currency}{taxAmount.toFixed(0)}</span></div>
               )}
             </div>
           </div>
 
           {/* Payment Method Selector */}
           <div>
-            <label className="block text-xs font-bold uppercase text-neutral-400 mb-2">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
               Payment Method
             </label>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => setPaymentMethod('CASH')}
-                className={`flex items-center justify-center space-x-3 p-4 rounded-xl border font-bold text-sm transition-all ${
+                className={`flex items-center justify-center space-x-3 p-4 rounded-2xl border font-black text-sm transition-all ${
                   paymentMethod === 'CASH'
-                    ? 'bg-yellow-400 text-black border-yellow-400 shadow-lg shadow-yellow-400/20'
-                    : 'bg-neutral-900 border-neutral-800 text-neutral-300 hover:bg-neutral-800'
+                    ? 'bg-yellow-400 text-slate-950 border-yellow-400 shadow-md shadow-yellow-400/25'
+                    : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                 }`}
               >
-                <Banknote className="w-5 h-5" />
+                <Banknote className="w-5 h-5 stroke-[2.2]" />
                 <span>Cash Payment</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setPaymentMethod('CARD')}
-                className={`flex items-center justify-center space-x-3 p-4 rounded-xl border font-bold text-sm transition-all ${
+                className={`flex items-center justify-center space-x-3 p-4 rounded-2xl border font-black text-sm transition-all ${
                   paymentMethod === 'CARD'
-                    ? 'bg-yellow-400 text-black border-yellow-400 shadow-lg shadow-yellow-400/20'
-                    : 'bg-neutral-900 border-neutral-800 text-neutral-300 hover:bg-neutral-800'
+                    ? 'bg-yellow-400 text-slate-950 border-yellow-400 shadow-md shadow-yellow-400/25'
+                    : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                 }`}
               >
-                <CreditCard className="w-5 h-5" />
+                <CreditCard className="w-5 h-5 stroke-[2.2]" />
                 <span>Card / POS Machine</span>
               </button>
             </div>
@@ -150,10 +150,10 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
 
           {/* Cash Details */}
           {paymentMethod === 'CASH' && (
-            <div className="space-y-4 bg-neutral-900/60 p-4 rounded-xl border border-neutral-800">
+            <div className="space-y-4 bg-slate-50/80 p-4 rounded-2xl border border-slate-200/80">
               <div>
-                <label className="block text-xs font-semibold text-neutral-300 mb-1.5">
-                  Tendered Amount ({currency})
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  Tendered Cash ({currency})
                 </label>
                 <input
                   type="number"
@@ -161,18 +161,18 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
                   placeholder={total.toFixed(0)}
                   value={tenderedInput}
                   onChange={(e) => setTenderedInput(e.target.value)}
-                  className="w-full bg-neutral-900 border border-neutral-700 rounded-xl px-4 py-2.5 text-xl font-mono font-bold text-white focus:outline-none focus:border-yellow-400"
+                  className="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xl font-mono font-black text-slate-950 focus:outline-none focus:border-yellow-400 shadow-xs"
                 />
               </div>
 
               {/* Quick Cash Presets (Pakistani Currency Notes) */}
               <div>
-                <span className="text-[11px] text-neutral-400 block mb-1.5 font-medium">Quick Cash Notes:</span>
+                <span className="text-[11px] text-slate-500 block mb-1.5 font-bold">Quick Currency Notes:</span>
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => handleQuickCash(total)}
-                    className="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg text-xs font-mono font-bold border border-neutral-700"
+                    className="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-900 rounded-xl text-xs font-mono font-black border border-slate-300 shadow-2xs"
                   >
                     Exact ({currency}{total.toFixed(0)})
                   </button>
@@ -181,7 +181,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
                       key={amt}
                       type="button"
                       onClick={() => handleQuickCash(amt)}
-                      className="px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-lg text-xs font-mono font-semibold border border-neutral-700"
+                      className="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-800 rounded-xl text-xs font-mono font-bold border border-slate-300 shadow-2xs"
                     >
                       {currency}{amt}
                     </button>
@@ -190,9 +190,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
               </div>
 
               {/* Change calculation */}
-              <div className="pt-2 border-t border-neutral-800 flex items-center justify-between">
-                <span className="text-sm font-semibold text-neutral-300">Change Due:</span>
-                <span className={`text-2xl font-mono font-extrabold ${changeDue > 0 ? 'text-yellow-400' : 'text-neutral-500'}`}>
+              <div className="pt-2 border-t border-slate-200 flex items-center justify-between">
+                <span className="text-sm font-bold text-slate-700">Change Due:</span>
+                <span className={`text-2xl font-mono font-black ${changeDue > 0 ? 'text-amber-600' : 'text-slate-400'}`}>
                   {currency}{changeDue.toFixed(0)}
                 </span>
               </div>
@@ -201,20 +201,20 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
 
           {/* Error display */}
           {errorMessage && (
-            <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl flex items-center space-x-2 text-xs text-rose-300">
-              <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400" />
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center space-x-2 text-xs text-rose-700">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-rose-500" />
               <span>{errorMessage}</span>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-[#171717] border-t border-neutral-800 flex items-center justify-end space-x-3">
+        <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end space-x-3">
           <button
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="px-4 py-2.5 rounded-xl text-xs font-bold text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors"
+            className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-200 transition-colors"
           >
             Cancel
           </button>
@@ -225,8 +225,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
             disabled={isSubmitting || !isTenderSufficient}
             className={`px-6 py-2.5 rounded-xl font-black text-xs flex items-center space-x-2 transition-all ${
               isSubmitting || !isTenderSufficient
-                ? 'bg-neutral-800 text-neutral-600 cursor-not-allowed'
-                : 'bg-yellow-400 hover:bg-yellow-300 text-black shadow-lg shadow-yellow-400/25'
+                ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                : 'bg-yellow-400 hover:bg-yellow-300 text-slate-950 shadow-md shadow-yellow-400/25'
             }`}
           >
             <CheckCircle className="w-4 h-4 stroke-[2.5]" />

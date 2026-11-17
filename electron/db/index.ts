@@ -11,6 +11,11 @@ import {
   CreateOrderInput,
   SalesSummary,
   Setting,
+  CategorySalesItem,
+  TopProductItem,
+  TimeTrendItem,
+  SalesReportFilter,
+  SalesReportData,
 } from './types';
 
 let db: Database.Database;
@@ -138,6 +143,7 @@ function seedInitialData() {
   const octoCheck = db.prepare("SELECT COUNT(*) as count FROM products WHERE sku LIKE 'PIZ-%' OR sku LIKE 'BRG-%'").get() as { count: number };
   if (octoCheck.count > 0) {
     console.log("[Database] Octopizza menu items already present.");
+    seedSampleSalesHistoryIfEmpty();
     return;
   }
 
@@ -574,6 +580,243 @@ export function getTodaySummary(): SalesSummary {
     mobileOrders: Number(summaryRow.mobileOrders || 0),
     averageOrderValue,
   };
+}
+
+export function getSalesReport(filter: SalesReportFilter): SalesReportData {
+  let dateCondition = "date(o.created_at, 'localtime') = date('now', 'localtime')";
+  let displayRange = 'Today';
+  let startDate = new Date().toISOString().split('T')[0];
+  let endDate = startDate;
+  const params: any[] = [];
+
+  const period = filter.period || 'daily';
+
+  if (period === 'daily') {
+    const targetDate = filter.date || startDate;
+    dateCondition = "date(o.created_at, 'localtime') = date(?)";
+    params.push(targetDate);
+    displayRange = `Daily: ${targetDate}`;
+    startDate = targetDate;
+    endDate = targetDate;
+  } else if (period === 'weekly') {
+    dateCondition = "date(o.created_at, 'localtime') >= date('now', 'localtime', '-6 days')";
+    displayRange = 'Last 7 Days';
+    const d = new Date();
+    d.setDate(d.getDate() - 6);
+    startDate = d.toISOString().split('T')[0];
+    endDate = new Date().toISOString().split('T')[0];
+  } else if (period === 'monthly') {
+    const targetMonth = filter.month || startDate.substring(0, 7);
+    dateCondition = "strftime('%Y-%m', o.created_at, 'localtime') = ?";
+    params.push(targetMonth);
+    displayRange = `Monthly: ${targetMonth}`;
+    startDate = `${targetMonth}-01`;
+    endDate = `${targetMonth}-31`;
+  } else if (period === 'custom') {
+    startDate = filter.startDate || startDate;
+    endDate = filter.endDate || endDate;
+    dateCondition = "date(o.created_at, 'localtime') BETWEEN date(?) AND date(?)";
+    params.push(startDate, endDate);
+    displayRange = `${startDate} to ${endDate}`;
+  }
+
+  // 1. Overall Summary
+  const summaryRow = db.prepare(`
+    SELECT
+      COALESCE(SUM(o.total), 0) as totalRevenue,
+      COALESCE(SUM(o.subtotal), 0) as subtotal,
+      COALESCE(SUM(o.discount), 0) as totalDiscount,
+      COALESCE(SUM(o.tax), 0) as totalTax,
+      COUNT(o.id) as orderCount,
+      COALESCE(SUM(CASE WHEN o.payment_method = 'CASH' THEN o.total ELSE 0 END), 0) as cashRevenue,
+      COALESCE(SUM(CASE WHEN o.payment_method = 'CARD' THEN o.total ELSE 0 END), 0) as cardRevenue,
+      COALESCE(SUM(CASE WHEN o.payment_method = 'OTHER' THEN o.total ELSE 0 END), 0) as otherRevenue,
+      COALESCE(SUM(CASE WHEN o.source = 'DESKTOP' THEN 1 ELSE 0 END), 0) as desktopOrders,
+      COALESCE(SUM(CASE WHEN o.source = 'MOBILE' THEN 1 ELSE 0 END), 0) as mobileOrders
+    FROM orders o
+    WHERE o.status = 'COMPLETED' AND ${dateCondition}
+  `).get(...params) as any;
+
+  const totalRevenue = Number(summaryRow?.totalRevenue || 0);
+  const orderCount = Number(summaryRow?.orderCount || 0);
+  const averageOrderValue = orderCount > 0 ? Number((totalRevenue / orderCount).toFixed(0)) : 0;
+
+  // 2. Category Sales
+  const categorySales = db.prepare(`
+    SELECT
+      c.name as categoryName,
+      COALESCE(SUM(oi.qty), 0) as itemsSold,
+      COALESCE(SUM(oi.line_total), 0) as revenue
+    FROM categories c
+    JOIN products p ON p.category_id = c.id
+    JOIN order_items oi ON oi.product_id = p.id
+    JOIN orders o ON o.id = oi.order_id
+    WHERE o.status = 'COMPLETED' AND ${dateCondition}
+    GROUP BY c.id, c.name
+    HAVING itemsSold > 0
+    ORDER BY revenue DESC
+  `).all(...params) as CategorySalesItem[];
+
+  for (const cat of categorySales) {
+    cat.percentage = totalRevenue > 0 ? Math.round((cat.revenue / totalRevenue) * 100) : 0;
+  }
+
+  // 3. Top Products
+  const topProducts = db.prepare(`
+    SELECT
+      oi.product_name as productName,
+      SUM(oi.qty) as qtySold,
+      SUM(oi.line_total) as revenue
+    FROM order_items oi
+    JOIN orders o ON o.id = oi.order_id
+    WHERE o.status = 'COMPLETED' AND ${dateCondition}
+    GROUP BY oi.product_name
+    ORDER BY qtySold DESC, revenue DESC
+    LIMIT 10
+  `).all(...params) as TopProductItem[];
+
+  // 4. Time Trend (Hourly for daily, Daily for monthly/weekly/custom)
+  let trend: TimeTrendItem[] = [];
+  if (period === 'daily') {
+    trend = db.prepare(`
+      SELECT
+        strftime('%H:00', o.created_at, 'localtime') as label,
+        COUNT(o.id) as orders,
+        COALESCE(SUM(o.total), 0) as revenue
+      FROM orders o
+      WHERE o.status = 'COMPLETED' AND ${dateCondition}
+      GROUP BY label
+      ORDER BY label ASC
+    `).all(...params) as TimeTrendItem[];
+  } else {
+    trend = db.prepare(`
+      SELECT
+        date(o.created_at, 'localtime') as label,
+        COUNT(o.id) as orders,
+        COALESCE(SUM(o.total), 0) as revenue
+      FROM orders o
+      WHERE o.status = 'COMPLETED' AND ${dateCondition}
+      GROUP BY label
+      ORDER BY label ASC
+    `).all(...params) as TimeTrendItem[];
+  }
+
+  // 5. Total items sold count
+  const itemsCountRow = db.prepare(`
+    SELECT COALESCE(SUM(oi.qty), 0) as itemsTotal
+    FROM order_items oi
+    JOIN orders o ON o.id = oi.order_id
+    WHERE o.status = 'COMPLETED' AND ${dateCondition}
+  `).get(...params) as any;
+  const itemsSoldTotal = Number(itemsCountRow?.itemsTotal || 0);
+
+  // 6. Orders list
+  const orders = db.prepare(`
+    SELECT o.*
+    FROM orders o
+    WHERE o.status = 'COMPLETED' AND ${dateCondition}
+    ORDER BY o.created_at DESC
+  `).all(...params) as Order[];
+
+  const getItemsStmt = db.prepare('SELECT * FROM order_items WHERE order_id = ?');
+  const ordersWithItems: OrderWithItems[] = orders.map((order) => ({
+    ...order,
+    items: getItemsStmt.all(order.id) as OrderItem[],
+  }));
+
+  return {
+    filter: {
+      period,
+      displayRange,
+      startDate,
+      endDate,
+    },
+    summary: {
+      totalRevenue: Number(totalRevenue.toFixed(0)),
+      subtotal: Number((summaryRow?.subtotal || 0).toFixed(0)),
+      totalDiscount: Number((summaryRow?.totalDiscount || 0).toFixed(0)),
+      totalTax: Number((summaryRow?.totalTax || 0).toFixed(0)),
+      orderCount,
+      averageOrderValue,
+      cashRevenue: Number(summaryRow?.cashRevenue || 0),
+      cardRevenue: Number(summaryRow?.cardRevenue || 0),
+      otherRevenue: Number(summaryRow?.otherRevenue || 0),
+      desktopOrders: Number(summaryRow?.desktopOrders || 0),
+      mobileOrders: Number(summaryRow?.mobileOrders || 0),
+      itemsSoldTotal,
+    },
+    categorySales,
+    topProducts,
+    trend,
+    orders: ordersWithItems,
+  };
+}
+
+export function seedSampleSalesHistoryIfEmpty(): void {
+  const existingCount = (db.prepare('SELECT COUNT(*) as count FROM orders').get() as { count: number }).count;
+  if (existingCount >= 5) {
+    return;
+  }
+
+  console.log('[Database] Seeding realistic sample historical sales for daily & monthly reports...');
+  const allProducts = db.prepare('SELECT * FROM products LIMIT 20').all() as Product[];
+  if (allProducts.length === 0) return;
+
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth(); // 0-indexed
+
+  const insertOrderStmt = db.prepare(`
+    INSERT INTO orders (invoice_no, subtotal, discount, tax, total, payment_method, source, status, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'COMPLETED', ?)
+  `);
+  const insertItemStmt = db.prepare(`
+    INSERT INTO order_items (order_id, product_id, product_name, qty, unit_price, line_total)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `);
+
+  const transaction = db.transaction(() => {
+    // Generate 18 orders across different days of this month
+    for (let i = 1; i <= 18; i++) {
+      const day = Math.max(1, (now.getDate() - (i % 12)));
+      const hour = 11 + (i % 11); // 11:00 to 22:00
+      const minute = (i * 7) % 60;
+      const orderDate = new Date(currentYear, currentMonth, day, hour, minute);
+      const isoDate = orderDate.toISOString().replace('T', ' ').substring(0, 19);
+
+      const p1 = allProducts[i % allProducts.length];
+      const p2 = allProducts[(i + 3) % allProducts.length];
+
+      const qty1 = 1 + (i % 2);
+      const qty2 = i % 3 === 0 ? 2 : 1;
+
+      const subtotal = (p1.price * qty1) + (p2.price * qty2);
+      const discount = i % 4 === 0 ? 100 : 0;
+      const tax = 0;
+      const total = subtotal - discount;
+      const paymentMethod = i % 3 === 0 ? 'CARD' : 'CASH';
+      const source = i % 4 === 0 ? 'MOBILE' : 'DESKTOP';
+      const invoiceNo = `INV-MOCK-${1000 + i}`;
+
+      const orderResult = insertOrderStmt.run(
+        invoiceNo,
+        subtotal,
+        discount,
+        tax,
+        total,
+        paymentMethod,
+        source,
+        isoDate
+      );
+      const orderId = Number(orderResult.lastInsertRowid);
+
+      insertItemStmt.run(orderId, p1.id, p1.name, qty1, p1.price, p1.price * qty1);
+      insertItemStmt.run(orderId, p2.id, p2.name, qty2, p2.price, p2.price * qty2);
+    }
+  });
+
+  transaction();
+  console.log('[Database] Sample historical orders successfully created.');
 }
 
 export function getSetting(key: string, defaultValue = ''): string {
