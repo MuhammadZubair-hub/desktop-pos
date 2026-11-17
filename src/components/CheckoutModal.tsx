@@ -79,8 +79,12 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, o
         {/* Header */}
         <div className="px-6 py-4.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
           <div>
-            <h3 className="text-lg font-black text-slate-900 flex items-center space-x-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+            <h3 className="text-lg font-black text-slate-900 flex items-center space-x-2.5">
+              <img
+                src="/images/logo.png"
+                alt="OCTOPIZZA'S"
+                className="w-6 h-6 object-cover rounded-full border border-slate-200"
+              />
               <span>Finalize Payment</span>
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">Select payment mode and collect bill amount</p>

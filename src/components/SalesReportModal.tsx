@@ -72,15 +72,26 @@ export const SalesReportModal: React.FC<SalesReportModalProps> = ({
             id="sales-report-print"
             className="w-full max-w-[800px] bg-white text-slate-900 p-8 rounded-2xl shadow-sm border border-slate-200 print:border-none print:shadow-none print:p-0"
           >
-            {/* Header: Store Info */}
-            <div className="text-center pb-5 border-b-2 border-slate-900">
-              <h1 className="text-2xl font-black tracking-wide uppercase text-slate-950">
-                {storeName}
-              </h1>
-              <p className="text-xs text-slate-600 mt-0.5">{storeAddress}</p>
-              <p className="text-xs font-bold text-slate-800">Phone: {storePhone}</p>
-              <div className="mt-3 inline-block px-3 py-1 bg-yellow-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-md">
-                {filter.period.toUpperCase()} SALES AUDIT & REVENUE REPORT
+            {/* Header: Store Info & Brand Logo */}
+            <div className="pb-5 border-b-2 border-slate-900">
+              <div className="flex items-center justify-center space-x-4">
+                <img
+                  src="/images/logo.png"
+                  alt="OCTOPIZZA'S"
+                  className="w-16 h-16 object-contain rounded-2xl shadow-sm border border-slate-200"
+                />
+                <div className="text-left">
+                  <h1 className="text-2xl font-black tracking-wide uppercase text-slate-950">
+                    {storeName}
+                  </h1>
+                  <p className="text-xs text-slate-600 mt-0.5">{storeAddress}</p>
+                  <p className="text-xs font-bold text-slate-800">Phone: {storePhone}</p>
+                </div>
+              </div>
+              <div className="mt-3 text-center">
+                <span className="inline-block px-3 py-1 bg-yellow-400 text-slate-950 font-black text-xs uppercase tracking-wider rounded-md">
+                  {filter.period.toUpperCase()} SALES AUDIT & REVENUE REPORT
+                </span>
               </div>
             </div>
 

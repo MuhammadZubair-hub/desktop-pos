@@ -21,14 +21,18 @@ export const SidebarRail: React.FC<SidebarRailProps> = ({ activeTab, setActiveTa
 
   return (
     <aside className="w-18 w-[72px] bg-white border-r border-slate-200/80 flex flex-col items-center justify-between py-4 select-none z-20 shrink-0 shadow-[2px_0_10px_rgba(0,0,0,0.02)]">
-      {/* Top: Brand Logo */}
+      {/* Top: Official Brand Logo */}
       <div className="flex flex-col items-center space-y-6">
         <button
           onClick={() => setActiveTab('billing')}
-          className="w-11 h-11 rounded-2xl bg-slate-950 flex items-center justify-center text-yellow-400 shadow-md shadow-slate-950/20 hover:scale-105 transition-all group"
+          className="w-12 h-12 rounded-2xl bg-slate-950 flex items-center justify-center p-1 shadow-md shadow-slate-950/20 hover:scale-105 transition-all group overflow-hidden border border-slate-800"
           title="OCTOPIZZA'S POS"
         >
-          <Pizza className="w-6 h-6 stroke-[2.2] group-hover:rotate-12 transition-transform" />
+          <img
+            src="/images/logo.png"
+            alt="OCTOPIZZA'S"
+            className="w-full h-full object-contain rounded-xl group-hover:scale-110 transition-transform duration-300"
+          />
         </button>
 
         {/* Navigation Action Buttons */}

@@ -57,8 +57,15 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ order, isOpen, onClo
             id="thermal-receipt"
             className="w-full max-w-[320px] bg-white text-black font-mono text-[11px] p-5 rounded shadow-xl border border-neutral-300"
           >
-            {/* Store Info */}
+            {/* Store Info & Brand Logo */}
             <div className="text-center pb-3 border-b border-dashed border-neutral-400">
+              <div className="flex justify-center mb-2">
+                <img
+                  src="/images/logo.png"
+                  alt="OCTOPIZZA'S"
+                  className="w-14 h-14 object-contain rounded-full border border-neutral-200"
+                />
+              </div>
               <h2 className="font-black text-lg tracking-wide uppercase">{storeName}</h2>
               <p className="text-[10px] text-neutral-600 font-sans mt-0.5 leading-tight">{storeAddress}</p>
               <p className="text-[10px] text-neutral-800 font-bold mt-1">Ph: {storePhone}</p>

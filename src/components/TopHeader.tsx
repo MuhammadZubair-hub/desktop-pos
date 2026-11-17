@@ -101,14 +101,18 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           <span>{time}</span>
         </div>
 
-        {/* Cashier Profile (matching Behance screenshot avatar & name) */}
+        {/* Cashier / Restaurant Profile with Official Brand Logo */}
         <div className="flex items-center space-x-2.5 pl-3 border-l border-slate-200">
-          <div className="w-9 h-9 rounded-full bg-slate-900 text-yellow-400 flex items-center justify-center font-bold text-xs shadow-sm">
-            OZ
+          <div className="w-9 h-9 rounded-full bg-slate-950 p-0.5 border border-slate-200 shadow-xs overflow-hidden flex items-center justify-center">
+            <img
+              src="/images/logo.png"
+              alt="OCTOPIZZA'S"
+              className="w-full h-full object-cover rounded-full"
+            />
           </div>
           <div className="text-left hidden xl:block">
             <div className="text-xs font-black text-slate-900 leading-tight">OCTOPIZZA'S</div>
-            <div className="text-[10px] text-slate-500 font-medium">Lahore Counter</div>
+            <div className="text-[10px] text-slate-500 font-medium">Fast, Fresh & Delicious</div>
           </div>
         </div>
       </div>
